@@ -11,12 +11,25 @@ import static org.junit.Assert.assertTrue;
 public class PathTrieTest {
 
     @Test
+    public void emptyTreeContainsNothing() {
+        PathTrie<Integer> trie = PathTrie.empty();
+        assertFalse("Does not contain any element", trie.get("").isPresent());
+        assertFalse("Does not contain any element", trie.get("other").isPresent());
+        assertFalse("Does not contain any element", trie.get(":other").isPresent());
+        assertFalse("Does not contain any element", trie.get(":").isPresent());
+        assertFalse("Does not contain any element", trie.get("some/path").isPresent());
+        assertFalse("Does not contain any element", trie.get("other/something/:other/path").isPresent());
+    }
+
+    @Test
     public void canRetrieveSingleSimplePath() {
         PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
                 .put("hello", 10)
                 .build();
         assertElementHasValue(trie, "hello", 10);
+        assertFalse("Does not contain element not added", trie.get("").isPresent());
         assertFalse("Does not contain element not added", trie.get("other").isPresent());
+        assertFalse("Does not contain element not added", trie.get(":other").isPresent());
     }
 
     @Test

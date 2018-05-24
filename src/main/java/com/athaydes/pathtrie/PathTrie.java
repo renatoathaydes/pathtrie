@@ -76,7 +76,7 @@ final class EmptyTrie implements PathTrie<Object> {
     }
 
     @Override
-    public Optional get(String path) {
+    public Optional<Object> get(String path) {
         return Optional.empty();
     }
 
