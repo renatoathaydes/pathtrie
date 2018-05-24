@@ -27,7 +27,7 @@ public class PathTrieBuilder<E> {
         return this;
     }
 
-    public PathTrieReader<E> build() {
+    public PathTrie<E> build() {
         return new ImmutablePathTrie<>(splitter, asImmutable(root));
     }
 

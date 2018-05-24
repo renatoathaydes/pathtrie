@@ -12,7 +12,7 @@ public class PathTrieTest {
 
     @Test
     public void canRetrieveSingleSimplePath() {
-        PathTrieReader<Integer> trie = PathTrieReader.<Integer>newBuilder()
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
                 .put("hello", 10)
                 .build();
         assertElementHasValue(trie, "hello", 10);
@@ -21,7 +21,7 @@ public class PathTrieTest {
 
     @Test
     public void canRetrieveSingleComplexPath() {
-        PathTrieReader<Integer> trie = PathTrieReader.<Integer>newBuilder()
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
                 .put("hello/joe/welcome/to/the/jungle", 10)
                 .build();
         assertElementHasValue(trie, "hello/joe/welcome/to/the/jungle", 10);
@@ -32,7 +32,7 @@ public class PathTrieTest {
 
     @Test
     public void canRetrieveMultiplePaths() {
-        PathTrieReader<Integer> trie = PathTrieReader.<Integer>newBuilder()
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
                 .put("hello", 10)
                 .put("ho", 15)
                 .put("bye/there", 20)
@@ -54,7 +54,7 @@ public class PathTrieTest {
 
     @Test
     public void canRetrieveChildTrie() {
-        PathTrieReader<Integer> trie = PathTrieReader.<Integer>newBuilder()
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
                 .put("hello", 10)
                 .put("ho", 15)
                 .put("bye/there", 20)
@@ -63,7 +63,7 @@ public class PathTrieTest {
                 .build();
 
         // check empty child
-        Optional<PathTrieReader<Integer>> emptyChild = trie.getChild("hello");
+        Optional<PathTrie<Integer>> emptyChild = trie.getChild("hello");
         assertTrue(emptyChild.isPresent());
         assertFalse("Does not contain anything", emptyChild.get().get("other").isPresent());
         assertFalse("Does not contain anything", emptyChild.get().get("ho").isPresent());
@@ -71,14 +71,14 @@ public class PathTrieTest {
         assertFalse("Does not contain anything", emptyChild.get().get("there").isPresent());
 
         // check child containing a single element
-        Optional<PathTrieReader<Integer>> byeTrie = trie.getChild("bye");
+        Optional<PathTrie<Integer>> byeTrie = trie.getChild("bye");
         assertTrue(byeTrie.isPresent());
         assertElementHasValue(byeTrie.get(), "there", 20);
         assertFalse("Does not contain element outside sub-trie", byeTrie.get().get("hello").isPresent());
         assertFalse("Does not contain element outside sub-trie", byeTrie.get().get("foo").isPresent());
 
         // check child containing 2 elements
-        Optional<PathTrieReader<Integer>> booTrie = trie.getChild("boo");
+        Optional<PathTrie<Integer>> booTrie = trie.getChild("boo");
         assertTrue(booTrie.isPresent());
         assertElementHasValue(booTrie.get(), "foo/moo/few", 30);
         assertElementHasValue(booTrie.get(), "foo/boo", 40);
@@ -89,7 +89,7 @@ public class PathTrieTest {
 
     @Test
     public void canResolveParameterizedPath() {
-        PathTrieReader<Integer> trie = PathTrieReader.<Integer>newBuilder()
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
                 .put(":person", 10)
                 .put("hello/name", 20)
                 .put("hello/:name", 30)
@@ -111,7 +111,7 @@ public class PathTrieTest {
 
     @Test(expected = NoSuchElementException.class)
     public void cannotResolveParameterThatDoesNotExist() {
-        PathTrieReader<Integer> trie = PathTrieReader.<Integer>newBuilder()
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
                 .put(":person", 10)
                 .build();
 
@@ -120,14 +120,14 @@ public class PathTrieTest {
 
     @Test(expected = NoSuchElementException.class)
     public void cannotResolveParameterThatDoesNotExistInSubPath() {
-        PathTrieReader<Integer> trie = PathTrieReader.<Integer>newBuilder()
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
                 .put("hello/:person", 10)
                 .build();
 
         trie.getParameterized("hello/joe").ifPresent(p -> p.param("wrong"));
     }
 
-    private void assertParameterHasValue(PathTrieReader<Integer> trie, String key, String parameterName,
+    private void assertParameterHasValue(PathTrie<Integer> trie, String key, String parameterName,
                                          String parameterValue, Integer value) {
         Optional<ParameterizedElement<Integer>> element = trie.getParameterized(key);
         assertTrue("Element is present: " + key, element.isPresent());
@@ -135,7 +135,7 @@ public class PathTrieTest {
         assertEquals("Element has correct value", element.get().param(parameterName), parameterValue);
     }
 
-    private static void assertElementHasValue(PathTrieReader<Integer> trie, String key, Integer value) {
+    private static void assertElementHasValue(PathTrie<Integer> trie, String key, Integer value) {
         assertTrue("Element is present: " + key, trie.get(key).isPresent());
         assertEquals("Element has correct value", trie.get(key).get(), value);
     }

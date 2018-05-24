@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-final class ImmutablePathTrie<E> implements PathTrieReader<E> {
+final class ImmutablePathTrie<E> implements PathTrie<E> {
 
     private final Splitter splitter;
     private final ImmutableTrieNode<E> root;
@@ -31,7 +31,7 @@ final class ImmutablePathTrie<E> implements PathTrieReader<E> {
     }
 
     @Override
-    public Optional<PathTrieReader<E>> getChild(String path) {
+    public Optional<PathTrie<E>> getChild(String path) {
         Iterable<String> pathParts = splitter.apply(path);
         return findNode(pathParts).map(n -> new ImmutablePathTrie<>(splitter, n));
     }
