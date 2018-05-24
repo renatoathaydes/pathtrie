@@ -5,19 +5,33 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Builder of {@link PathTrie} instances.
+ * <p>
+ * To create instances of this builder, use {@link PathTrie#newBuilder()} or {@link PathTrie#newBuilder(Splitter)}.
+ *
+ * @param <E> type of elements contained in instances of {@link PathTrie}
+ */
 public class PathTrieBuilder<E> {
 
     private final MutableTrieNode<E> root = new MutableTrieNode<>();
     private final Splitter splitter;
 
-    public PathTrieBuilder() {
+    PathTrieBuilder() {
         this((path) -> Arrays.asList(path.split("/")));
     }
 
-    public PathTrieBuilder(Splitter splitter) {
+    PathTrieBuilder(Splitter splitter) {
         this.splitter = splitter;
     }
 
+    /**
+     * Put an element under the given path.
+     *
+     * @param path    to place the element on
+     * @param element the element to pu
+     * @return this builder
+     */
     public PathTrieBuilder<E> put(String path, E element) {
         Iterator<String> pathIterator = splitter.apply(path).iterator();
         if (!pathIterator.hasNext()) {
@@ -27,6 +41,9 @@ public class PathTrieBuilder<E> {
         return this;
     }
 
+    /**
+     * @return an instance of {@link PathTrie} containing the elements added to this builder.
+     */
     public PathTrie<E> build() {
         return new ImmutablePathTrie<>(splitter, asImmutable(root));
     }
