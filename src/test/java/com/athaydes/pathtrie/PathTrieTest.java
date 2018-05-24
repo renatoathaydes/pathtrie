@@ -109,6 +109,35 @@ public class PathTrieTest {
         assertFalse("Does not contain element not added", trie.get("hello/mary/other/path").isPresent());
     }
 
+    @Test
+    public void canResolveParameterizedPathWithCustomParameterPrefix() {
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder(
+                PathSplitter.newBuilder()
+                        .splitOn("\\")
+                        .withParameterPrefix("?")
+                        .build())
+                .put("?person", 10)
+                .put("hello\\name", 20)
+                .put("hello\\?name", 30)
+                .build();
+
+        assertParameterHasValue(trie, "mary", "person", "mary", 10);
+        assertParameterHasValue(trie, "ana", "person", "ana", 10);
+        assertParameterHasValue(trie, "hello/joe", "person", "hello/joe", 10);
+        assertParameterHasValue(trie, "hello\\joe", "name", "joe", 30);
+        assertParameterHasValue(trie, "hello\\mary", "name", "mary", 30);
+        assertParameterHasValue(trie, "hello\\ana", "name", "ana", 30);
+        assertElementHasValue(trie, "hello/name", 10);
+        assertElementHasValue(trie, "some/name", 10);
+        assertElementHasValue(trie, "hello\\name", 20);
+        assertElementHasValue(trie, "hello\\mary", 30);
+        assertElementHasValue(trie, "hello\\ana", 30);
+        assertFalse("Does not contain element not added", trie.get("other\\hello").isPresent());
+        assertFalse("Does not contain element not added", trie.get("path\\other\\hello").isPresent());
+        assertFalse("Does not contain element not added", trie.get("hello\\name\\other").isPresent());
+        assertFalse("Does not contain element not added", trie.get("hello\\mary\\other\\path").isPresent());
+    }
+
     @Test(expected = NoSuchElementException.class)
     public void cannotResolveParameterThatDoesNotExist() {
         PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()

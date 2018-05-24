@@ -9,31 +9,31 @@ import java.util.stream.Stream;
 
 final class ImmutablePathTrie<E> implements PathTrie<E> {
 
-    private final Splitter splitter;
+    private final PathSplitter pathSplitter;
     private final ImmutableTrieNode<E> root;
 
-    ImmutablePathTrie(Splitter splitter, ImmutableTrieNode<E> root) {
-        this.splitter = splitter;
+    ImmutablePathTrie(PathSplitter pathSplitter, ImmutableTrieNode<E> root) {
+        this.pathSplitter = pathSplitter;
         this.root = root;
     }
 
     @Override
     public Optional<E> get(String path) {
-        Iterable<String> pathParts = splitter.apply(path);
+        Iterable<String> pathParts = pathSplitter.apply(path);
         Optional<ImmutableTrieNode<E>> node = findNode(pathParts);
         return node.map(n -> n.element);
     }
 
     @Override
     public Optional<ParameterizedElement<E>> getParameterized(String path) {
-        final Iterable<String> pathParts = splitter.apply(path);
+        final Iterable<String> pathParts = pathSplitter.apply(path);
         return findParameterizedNode(pathParts);
     }
 
     @Override
     public Optional<PathTrie<E>> getChild(String path) {
-        Iterable<String> pathParts = splitter.apply(path);
-        return findNode(pathParts).map(n -> new ImmutablePathTrie<>(splitter, n));
+        Iterable<String> pathParts = pathSplitter.apply(path);
+        return findNode(pathParts).map(n -> new ImmutablePathTrie<>(pathSplitter, n));
     }
 
     private Optional<ImmutableTrieNode<E>> findNode(Iterable<String> pathParts) {

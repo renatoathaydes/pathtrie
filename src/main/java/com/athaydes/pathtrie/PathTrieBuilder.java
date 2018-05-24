@@ -1,6 +1,5 @@
 package com.athaydes.pathtrie;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -8,21 +7,17 @@ import java.util.Map;
 /**
  * Builder of {@link PathTrie} instances.
  * <p>
- * To create instances of this builder, use {@link PathTrie#newBuilder()} or {@link PathTrie#newBuilder(Splitter)}.
+ * To create instances of this builder, use {@link PathTrie#newBuilder()} or {@link PathTrie#newBuilder(PathSplitter)}.
  *
  * @param <E> type of elements contained in instances of {@link PathTrie}
  */
 public class PathTrieBuilder<E> {
 
     private final MutableTrieNode<E> root = new MutableTrieNode<>();
-    private final Splitter splitter;
+    private final PathSplitter pathSplitter;
 
-    PathTrieBuilder() {
-        this((path) -> Arrays.asList(path.split("/")));
-    }
-
-    PathTrieBuilder(Splitter splitter) {
-        this.splitter = splitter;
+    PathTrieBuilder(PathSplitter pathSplitter) {
+        this.pathSplitter = pathSplitter;
     }
 
     /**
@@ -33,11 +28,11 @@ public class PathTrieBuilder<E> {
      * @return this builder
      */
     public PathTrieBuilder<E> put(String path, E element) {
-        Iterator<String> pathIterator = splitter.apply(path).iterator();
+        Iterator<String> pathIterator = pathSplitter.apply(path).iterator();
         if (!pathIterator.hasNext()) {
             throw new IllegalArgumentException("Path cannot be split into one or more parts: '" + path + "'");
         }
-        root.put(pathIterator.next(), pathIterator, element);
+        root.put(pathIterator.next(), pathIterator, pathSplitter.parameterizedParameterPrefix(), element);
         return this;
     }
 
@@ -45,7 +40,7 @@ public class PathTrieBuilder<E> {
      * @return an instance of {@link PathTrie} containing the elements added to this builder.
      */
     public PathTrie<E> build() {
-        return new ImmutablePathTrie<>(splitter, asImmutable(root));
+        return new ImmutablePathTrie<>(pathSplitter, asImmutable(root));
     }
 
     private static <E> ImmutablePathTrie.ImmutableTrieNode<E> asImmutable(MutableTrieNode<E> node) {

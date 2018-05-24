@@ -29,7 +29,7 @@ public interface PathTrie<E> {
      * @return builder
      */
     static <T> PathTrieBuilder<T> newBuilder() {
-        return new PathTrieBuilder<>();
+        return new PathTrieBuilder<>(PathSplitter.newBuilder().build());
     }
 
     /**
@@ -38,8 +38,8 @@ public interface PathTrie<E> {
      * @param <T> type of elements
      * @return builder
      */
-    static <T> PathTrieBuilder<T> newBuilder(Splitter splitter) {
-        return new PathTrieBuilder<>(splitter);
+    static <T> PathTrieBuilder<T> newBuilder(PathSplitter pathSplitter) {
+        return new PathTrieBuilder<>(pathSplitter);
     }
 
     /**

@@ -12,11 +12,11 @@ class MutableTrieNode<E> {
     ParameterizedTrieNode<E> parameterizedChild;
     E element;
 
-    public void put(String pathPart, Iterator<String> nextPaths, E element) {
-        MutableTrieNode<E> node = child(pathPart);
+    public void put(String pathPart, Iterator<String> nextPaths, String parameterPrefix, E element) {
+        MutableTrieNode<E> node = child(pathPart, parameterPrefix);
         if (nextPaths.hasNext()) {
             String childPath = nextPaths.next();
-            node.put(childPath, nextPaths, element);
+            node.put(childPath, nextPaths, parameterPrefix, element);
         } else {
             node.element = element;
         }
@@ -28,11 +28,11 @@ class MutableTrieNode<E> {
                 childrenByPath.values().stream());
     }
 
-    private MutableTrieNode<E> child(String pathPart) {
+    private MutableTrieNode<E> child(String pathPart, String parameterPrefix) {
         MutableTrieNode<E> child = childrenByPath.get(pathPart);
         if (child == null) {
-            if (pathPart.startsWith(":")) {
-                parameterizedChild = new ParameterizedTrieNode<>(pathPart.substring(1));
+            if (pathPart.startsWith(parameterPrefix)) {
+                parameterizedChild = new ParameterizedTrieNode<>(pathPart.substring(parameterPrefix.length()));
                 child = parameterizedChild;
             } else {
                 MutableTrieNode<E> newChild = new MutableTrieNode<>();
