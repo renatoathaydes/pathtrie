@@ -169,6 +169,49 @@ public class PathTrieTest {
         trie.getParameterized("hello/joe").ifPresent(p -> p.param("wrong"));
     }
 
+    @Test
+    public void toStringTest() {
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
+                .put("hello", 10)
+                .put("hello/:there", 20)
+                .put("boo", 30)
+                .put("boo/foo/bar", 61)
+                .build();
+
+        assertEquals("PathTrie {\n" +
+                "hello: 10\n" +
+                "  <there>: 20\n" +
+                "boo: 30\n" +
+                "  foo\n" +
+                "    bar: 61\n" +
+                "}", trie.toString());
+    }
+
+    @Test
+    public void toStringTest2() {
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
+                .put(":name", 10)
+                .put("name", 20)
+                .put("abc", 15)
+                .put("something/other/path/foo/bar", 30)
+                .put("boo/foo/bar", 61)
+                .build();
+
+        assertEquals("PathTrie {\n" +
+                "name: 20\n" +
+                "abc: 15\n" +
+                "something\n" +
+                "  other\n" +
+                "    path\n" +
+                "      foo\n" +
+                "        bar: 30\n" +
+                "boo\n" +
+                "  foo\n" +
+                "    bar: 61\n" +
+                "<name>: 10\n" +
+                "}", trie.toString());
+    }
+
     private void assertParameterHasValue(PathTrie<Integer> trie, String key, String parameterName,
                                          String parameterValue, Integer value) {
         Optional<ParameterizedElement<Integer>> element = trie.getParameterized(key);

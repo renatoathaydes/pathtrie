@@ -1,7 +1,7 @@
 package com.athaydes.pathtrie;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -55,7 +55,7 @@ public class PathTrieBuilder<E> {
 
     private static <E> Map<String, ImmutablePathTrie.ImmutableTrieNode<E>> asImmutable(
             Map<String, MutableTrieNode<E>> childrenByPath) {
-        Map<String, ImmutablePathTrie.ImmutableTrieNode<E>> result = new HashMap<>(childrenByPath.size());
+        Map<String, ImmutablePathTrie.ImmutableTrieNode<E>> result = new LinkedHashMap<>(childrenByPath.size());
         childrenByPath.forEach((path, child) -> result.put(path, asImmutable(child)));
         return result;
     }

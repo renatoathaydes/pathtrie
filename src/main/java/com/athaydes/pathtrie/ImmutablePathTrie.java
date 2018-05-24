@@ -3,9 +3,8 @@ package com.athaydes.pathtrie;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.function.BiConsumer;
 
 final class ImmutablePathTrie<E> implements PathTrie<E> {
 
@@ -63,6 +62,31 @@ final class ImmutablePathTrie<E> implements PathTrie<E> {
                 : new DefaultParameterizedElement<>(current.element, parameterMap));
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("PathTrie {\n");
+        buildString(builder, root, "");
+        builder.append("}");
+        return builder.toString();
+    }
+
+    private static void buildString(StringBuilder builder, ImmutableTrieNode<?> node, String indent) {
+        node.forEach((pathPart, child) -> {
+            builder.append(indent);
+            if (child instanceof ParameterizedImmutableTrieNode) {
+                builder.append('<').append(pathPart).append('>');
+            } else {
+                builder.append(pathPart);
+            }
+            if (child.element != null) {
+                builder.append(": ").append(child.element);
+            }
+            builder.append('\n');
+            buildString(builder, child, indent + "  ");
+        });
+    }
+
     static abstract class ImmutableTrieNode<E> {
         final E element;
 
@@ -72,7 +96,7 @@ final class ImmutablePathTrie<E> implements PathTrie<E> {
 
         abstract ImmutableTrieNode<E> get(String pathPart);
 
-        abstract Stream<ImmutableTrieNode<E>> getChildren();
+        abstract void forEach(BiConsumer<String, ImmutableTrieNode> action);
     }
 
     static class ImmutableTrieNodeImpl<E> extends ImmutableTrieNode<E> {
@@ -88,10 +112,12 @@ final class ImmutablePathTrie<E> implements PathTrie<E> {
             this.parameterizedChild = parameterizedChild;
         }
 
-        Stream<ImmutableTrieNode<E>> getChildren() {
-            return Stream.concat(
-                    Stream.of(parameterizedChild).filter(Objects::nonNull),
-                    childrenByPath.values().stream());
+        @Override
+        void forEach(BiConsumer<String, ImmutableTrieNode> action) {
+            childrenByPath.forEach(action);
+            if (parameterizedChild != null) {
+                action.accept(parameterizedChild.parameterName, parameterizedChild);
+            }
         }
 
         @Override

@@ -1,14 +1,12 @@
 package com.athaydes.pathtrie;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 class MutableTrieNode<E> {
 
-    final Map<String, MutableTrieNode<E>> childrenByPath = new HashMap<>(2);
+    final Map<String, MutableTrieNode<E>> childrenByPath = new LinkedHashMap<>(2);
     ParameterizedTrieNode<E> parameterizedChild;
     E element;
 
@@ -20,12 +18,6 @@ class MutableTrieNode<E> {
         } else {
             node.element = element;
         }
-    }
-
-    Stream<MutableTrieNode<E>> getChildren() {
-        return Stream.concat(
-                Stream.of(parameterizedChild).filter(Objects::nonNull),
-                childrenByPath.values().stream());
     }
 
     private MutableTrieNode<E> child(String pathPart, String parameterPrefix) {
