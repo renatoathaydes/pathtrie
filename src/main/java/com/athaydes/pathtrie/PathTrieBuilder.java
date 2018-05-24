@@ -1,8 +1,10 @@
 package com.athaydes.pathtrie;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Builder of {@link PathTrie} instances.
@@ -40,7 +42,25 @@ public class PathTrieBuilder<E> {
      * @return an instance of {@link PathTrie} containing the elements added to this builder.
      */
     public PathTrie<E> build() {
+        verifyNoRepeatedParameterNames(root, new HashSet<>());
         return new ImmutablePathTrie<>(pathSplitter, asImmutable(root));
+    }
+
+    private static void verifyNoRepeatedParameterNames(MutableTrieNode<?> node, Set<String> visitedParameters) {
+        if (node instanceof ParameterizedTrieNode) {
+            String name = ((ParameterizedTrieNode<?>) node).parameterName;
+            boolean seenBefore = !visitedParameters.add(name);
+            if (seenBefore) {
+                throw new IllegalArgumentException("Parameter name appears more than once on same hierarchy: " + name);
+            }
+        }
+        Set<String> visitedInBranch = new HashSet<>(visitedParameters);
+        for (MutableTrieNode<?> mutableTrieNode : node.childrenByPath.values()) {
+            verifyNoRepeatedParameterNames(mutableTrieNode, visitedInBranch);
+        }
+        if (node.parameterizedChild != null) {
+            verifyNoRepeatedParameterNames(node.parameterizedChild, visitedInBranch);
+        }
     }
 
     private static <E> ImmutablePathTrie.ImmutableTrieNode<E> asImmutable(MutableTrieNode<E> node) {

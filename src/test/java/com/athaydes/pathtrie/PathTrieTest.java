@@ -170,6 +170,36 @@ public class PathTrieTest {
     }
 
     @Test
+    public void cannotPutMoreThanOneParameterOnSameLevel() {
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
+                .put("hello/:person", 10)
+                .put("hello/:animal", 11)
+                .put("hello/:thing", 12)
+                .put("hello/:name", 20)
+                .build();
+
+        assertParameterHasValue(trie, "hello/bob", "name", "bob", 20);
+    }
+
+    @Test
+    public void cannotHaveMoreThanOneParameterWithSameNameOnHierarchy() {
+        Exception error = shouldThrow(() -> PathTrie.<Integer>newBuilder()
+                .put("hello/:name/other/:name/:something", 10)
+                .build());
+        assertTrue("Error is of expected type :" + error, error instanceof IllegalArgumentException);
+    }
+
+    @Test
+    public void canHaveMoreThanOneParameterWithSameNameOnDifferentHierarchy() {
+        PathTrie.<Integer>newBuilder()
+                .put("hello/one/:name/:something", 10)
+                .put("hello/other/:name/:something", 20)
+                .put("hello/:name", 30)
+                .put("hello/:something/:name", 40)
+                .build();
+    }
+
+    @Test
     public void toStringTest() {
         PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
                 .put("hello", 10)
@@ -223,6 +253,15 @@ public class PathTrieTest {
     private static void assertElementHasValue(PathTrie<Integer> trie, String key, Integer value) {
         assertTrue("Element is present: " + key, trie.get(key).isPresent());
         assertEquals("Element has correct value", trie.get(key).get(), value);
+    }
+
+    private static Exception shouldThrow(Runnable action) {
+        try {
+            action.run();
+        } catch (Exception e) {
+            return e;
+        }
+        throw new AssertionError("Expected Exception to be thrown but nothing happened");
     }
 
 }
