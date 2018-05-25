@@ -76,4 +76,20 @@ public class Examples {
         assertEquals("found: false", user789);
     }
 
+    @Test
+    public void customizedPathTrie() {
+        PathTrie<Integer> customTrie = PathTrie.<Integer>newBuilder(
+                PathSplitter.newBuilder()
+                        .splitOn("\\")
+                        .withParameterPrefix("?")
+                        .build())
+                .putFun("?name\\age", (name) -> name.equals("joe") ? 32 : -1)
+                .build();
+
+        Optional<ParameterizedElement<Integer>> param = customTrie.getParameterized("joe\\age");
+
+        assertTrue(param.isPresent());
+        assertEquals(Integer.valueOf(32), param.get().getElement());
+    }
+
 }

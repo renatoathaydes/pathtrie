@@ -7,17 +7,17 @@ import java.util.Set;
 
 final class DefaultParameterizedElement<E> implements ParameterizedElement<E> {
 
-    private final E element;
+    private final Box<E> element;
     private final Map<String, String> parameters;
 
-    DefaultParameterizedElement(E element, Map<String, String> parameters) {
+    DefaultParameterizedElement(Box<E> element, Map<String, String> parameters) {
         this.element = element;
         this.parameters = Collections.unmodifiableMap(parameters);
     }
 
     @Override
     public E getElement() {
-        return element;
+        return element.use(b -> b.element, f -> f.fun.applyParam(this));
     }
 
     @Override

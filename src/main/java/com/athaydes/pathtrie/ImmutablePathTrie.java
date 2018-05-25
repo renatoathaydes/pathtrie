@@ -20,7 +20,10 @@ final class ImmutablePathTrie<E> implements PathTrie<E> {
     public Optional<E> get(String path) {
         Iterable<String> pathParts = pathSplitter.apply(path);
         Optional<ImmutableTrieNode<E>> node = findNode(pathParts);
-        return node.map(n -> n.element);
+        return node.map(n -> n.element == null ? null : n.element.use(b -> b.element, f -> {
+            throw new IllegalStateException("Cannot use get(path) method to retrieve value from parameterized " +
+                    "function. Use getParameterized(path) instead.");
+        }));
     }
 
     @Override
@@ -88,9 +91,9 @@ final class ImmutablePathTrie<E> implements PathTrie<E> {
     }
 
     static abstract class ImmutableTrieNode<E> {
-        final E element;
+        final Box<E> element;
 
-        ImmutableTrieNode(E element) {
+        ImmutableTrieNode(Box<E> element) {
             this.element = element;
         }
 
@@ -104,7 +107,7 @@ final class ImmutablePathTrie<E> implements PathTrie<E> {
         private final Map<String, ImmutableTrieNode<E>> childrenByPath;
         private final ParameterizedImmutableTrieNode<E> parameterizedChild;
 
-        ImmutableTrieNodeImpl(E element,
+        ImmutableTrieNodeImpl(Box<E> element,
                               Map<String, ImmutableTrieNode<E>> childrenByPath,
                               ParameterizedImmutableTrieNode<E> parameterizedChild) {
             super(element);
@@ -133,7 +136,7 @@ final class ImmutablePathTrie<E> implements PathTrie<E> {
     static class ParameterizedImmutableTrieNode<E> extends ImmutableTrieNodeImpl<E> {
         final String parameterName;
 
-        ParameterizedImmutableTrieNode(E element,
+        ParameterizedImmutableTrieNode(Box<E> element,
                                        Map<String, ImmutableTrieNode<E>> childrenByPath,
                                        ParameterizedImmutableTrieNode<E> parameterizedChild,
                                        String parameterName) {

@@ -297,15 +297,35 @@ public class PathTrieTest {
                 "}", trie.toString());
     }
 
-    private void assertParameterHasValue(PathTrie<Integer> trie, String key, String parameterName,
-                                         String parameterValue, Integer value) {
-        Optional<ParameterizedElement<Integer>> element = trie.getParameterized(key);
+    @Test
+    public void canPutFunInTrie() {
+        PathTrie<String> trie = PathTrie.<String>newBuilder()
+                .putFun("hello/:person", person -> "Person is " + person)
+                .putFun("ola/:name/:age", (name, age) -> "" + name + " is " + age + " years old")
+                .build();
+
+        assertParameterHasValue(trie, "hello/bob", "person", "bob", "Person is bob");
+        assertParameterHasValue(trie, "hello/mary", "person", "mary", "Person is mary");
+        assertParameterHasValue(trie, "hello/mary", "person", "mary", "Person is mary");
+        assertElementHasValue(trie, "hello/mary", "Person is mary");
+        assertElementHasValue(trie, "ola/mary/29", "mary is 29 years old");
+        assertElementHasValue(trie, "ola/bob/57", "bob is 57 years old");
+        assertParameterHasValue(trie, "ola/mary/29", "name", "mary", "mary is 29 years old");
+        assertParameterHasValue(trie, "ola/mary/29", "age", "29", "mary is 29 years old");
+        assertElementHasValue(trie, "hello/bob", "Person is bob");
+        assertFalse("Does not contain element not added", trie.get("other").isPresent());
+        assertFalse("Does not contain element not added", trie.get("other/path").isPresent());
+    }
+
+    private <V> void assertParameterHasValue(PathTrie<V> trie, String key, String parameterName,
+                                             String parameterValue, V value) {
+        Optional<ParameterizedElement<V>> element = trie.getParameterized(key);
         assertTrue("Element is present: " + key, element.isPresent());
         assertEquals("Element has correct value", element.get().getElement(), value);
         assertEquals("Element has correct value", element.get().param(parameterName), parameterValue);
     }
 
-    private static void assertElementHasValue(PathTrie<Integer> trie, String key, Integer value) {
+    private static <V> void assertElementHasValue(PathTrie<V> trie, String key, V value) {
         assertTrue("Element is present: " + key, trie.get(key).isPresent());
         assertEquals("Element has correct value", trie.get(key).get(), value);
     }

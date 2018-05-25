@@ -8,9 +8,9 @@ class MutableTrieNode<E> {
 
     final Map<String, MutableTrieNode<E>> childrenByPath = new LinkedHashMap<>(2);
     ParameterizedTrieNode<E> parameterizedChild;
-    E element;
+    Box<E> element;
 
-    public void put(String pathPart, Iterator<String> nextPaths, String parameterPrefix, E element) {
+    public void put(String pathPart, Iterator<String> nextPaths, String parameterPrefix, Box<E> element) {
         MutableTrieNode<E> node = child(pathPart, parameterPrefix);
         if (nextPaths.hasNext()) {
             String childPath = nextPaths.next();
@@ -43,5 +43,4 @@ class ParameterizedTrieNode<E> extends MutableTrieNode<E> {
     ParameterizedTrieNode(String parameterName) {
         this.parameterName = parameterName;
     }
-
 }

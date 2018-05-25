@@ -1,5 +1,10 @@
 package com.athaydes.pathtrie;
 
+import com.athaydes.pathtrie.functions.Fun0;
+import com.athaydes.pathtrie.functions.Fun1;
+import com.athaydes.pathtrie.functions.Fun2;
+import com.athaydes.pathtrie.functions.Fun3;
+import com.athaydes.pathtrie.functions.Fun4;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -30,11 +35,35 @@ public class PathTrieBuilder<E> {
      * @return this builder
      */
     public PathTrieBuilder<E> put(String path, E element) {
+        return putBox(path, new Box.SimpleBox<>(element));
+    }
+
+    public PathTrieBuilder<E> putFun(String path, Fun0<E> fun) {
+        return putBox(path, new Box.FunBox<>(fun));
+    }
+
+    public PathTrieBuilder<E> putFun(String path, Fun1<E> fun) {
+        return putBox(path, new Box.FunBox<>(fun));
+    }
+
+    public PathTrieBuilder<E> putFun(String path, Fun2<E> fun) {
+        return putBox(path, new Box.FunBox<>(fun));
+    }
+
+    public PathTrieBuilder<E> putFun(String path, Fun3<E> fun) {
+        return putBox(path, new Box.FunBox<>(fun));
+    }
+
+    public PathTrieBuilder<E> putFun(String path, Fun4<E> fun) {
+        return putBox(path, new Box.FunBox<>(fun));
+    }
+
+    private PathTrieBuilder<E> putBox(String path, Box<E> box) {
         Iterator<String> pathIterator = pathSplitter.apply(path).iterator();
         if (!pathIterator.hasNext()) {
             throw new IllegalArgumentException("Path cannot be split into one or more parts: '" + path + "'");
         }
-        root.put(pathIterator.next(), pathIterator, pathSplitter.parameterizedParameterPrefix(), element);
+        root.put(pathIterator.next(), pathIterator, pathSplitter.parameterizedParameterPrefix(), box);
         return this;
     }
 
