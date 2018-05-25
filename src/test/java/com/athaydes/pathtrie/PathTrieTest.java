@@ -33,6 +33,61 @@ public class PathTrieTest {
     }
 
     @Test
+    public void canRetrieveSingleEmptyPath() {
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
+                .put("", 10)
+                .build();
+        assertElementHasValue(trie, "", 10);
+        assertFalse("Does not contain element not added", trie.get("other").isPresent());
+        assertFalse("Does not contain element not added", trie.get(":other").isPresent());
+    }
+
+    @Test
+    public void canRetrieveEmptyParameterizedPath() {
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
+                .put(":", 10)
+                .put("hello/:", 20)
+                .build();
+        assertParameterHasValue(trie, "", "", "", 10);
+        assertParameterHasValue(trie, "mary", "", "mary", 10);
+        assertParameterHasValue(trie, "hello/bob", "", "bob", 20);
+        assertFalse("Does not contain element not added", trie.get("mary/jane").isPresent());
+        assertFalse("Does not contain element not added", trie.get("hello/john/smith").isPresent());
+    }
+
+    @Test
+    public void trailingSeparatorIsIgnored() {
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
+                .put("hello", 10)
+                .put("hello/world", 20)
+                .build();
+        assertElementHasValue(trie, "hello", 10);
+        assertElementHasValue(trie, "hello/", 10);
+        assertElementHasValue(trie, "hello/world", 20);
+        assertElementHasValue(trie, "hello/world/", 20);
+        assertFalse("Does not contain element not added", trie.get("").isPresent());
+        assertFalse("Does not contain element not added", trie.get("other").isPresent());
+        assertFalse("Does not contain element not added", trie.get(":other").isPresent());
+    }
+
+    @Test
+    public void leadingSeparatorTest() {
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
+                .put("/hello", 10)
+                .put("/hello/world", 20)
+                .build();
+        assertElementHasValue(trie, "/hello", 10);
+        assertElementHasValue(trie, "/hello/", 10);
+        assertElementHasValue(trie, "/hello/world", 20);
+        assertElementHasValue(trie, "/hello/world/", 20);
+        assertFalse("Does not contain element not added", trie.get("").isPresent());
+        assertFalse("Does not contain element not added", trie.get("hello").isPresent());
+        assertFalse("Does not contain element not added", trie.get("hello/world").isPresent());
+        assertFalse("Does not contain element not added", trie.get("other").isPresent());
+        assertFalse("Does not contain element not added", trie.get(":other").isPresent());
+    }
+
+    @Test
     public void canRetrieveSingleComplexPath() {
         PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
                 .put("hello/joe/welcome/to/the/jungle", 10)
