@@ -18,51 +18,36 @@ final class ImmutablePathTrie<E> implements PathTrie<E> {
 
     @Override
     public Optional<E> get(String path) {
-        Iterable<String> pathParts = pathSplitter.apply(path);
-        Optional<ImmutableTrieNode<E>> node = findNode(pathParts);
-        return node.map(n -> n.element == null ? null : n.element.use(b -> b.element, f -> {
-            throw new IllegalStateException("Cannot use get(path) method to retrieve value from parameterized " +
-                    "function. Use getParameterized(path) instead.");
-        }));
+        return getParameterized(path).map(ParameterizedElement::getElement);
     }
 
     @Override
     public Optional<ParameterizedElement<E>> getParameterized(String path) {
         final Iterable<String> pathParts = pathSplitter.apply(path);
-        return findParameterizedNode(pathParts);
+        Map<String, String> parameterMap = new HashMap<>();
+        return findNode(pathParts, parameterMap)
+                .map(n -> n.element == null
+                        ? null
+                        : new DefaultParameterizedElement<>(n.element, parameterMap));
     }
 
     @Override
     public Optional<PathTrie<E>> getChild(String path) {
         Iterable<String> pathParts = pathSplitter.apply(path);
-        return findNode(pathParts).map(n -> new ImmutablePathTrie<>(pathSplitter, n));
+        return findNode(pathParts, null).map(n -> new ImmutablePathTrie<>(pathSplitter, n));
     }
 
-    private Optional<ImmutableTrieNode<E>> findNode(Iterable<String> pathParts) {
+    private Optional<ImmutableTrieNode<E>> findNode(Iterable<String> pathParts, Map<String, String> parameterMap) {
         ImmutableTrieNode<E> current = root;
         for (String pathPart : pathParts) {
             current = current.get(pathPart);
             if (current == null) {
                 break;
-            }
-        }
-        return Optional.ofNullable(current == root ? null : current);
-    }
-
-    private Optional<ParameterizedElement<E>> findParameterizedNode(Iterable<String> pathParts) {
-        Map<String, String> parameterMap = new HashMap<>();
-        ImmutableTrieNode<E> current = root;
-        for (String pathPart : pathParts) {
-            current = current.get(pathPart);
-            if (current == null) {
-                break;
-            } else if (current instanceof ParameterizedImmutableTrieNode) {
+            } else if (parameterMap != null && current instanceof ParameterizedImmutableTrieNode) {
                 parameterMap.put(((ParameterizedImmutableTrieNode<E>) current).parameterName, pathPart);
             }
         }
-        return Optional.ofNullable(current == null || current.element == null
-                ? null
-                : new DefaultParameterizedElement<>(current.element, parameterMap));
+        return Optional.ofNullable(current == null || current == root ? null : current);
     }
 
     @Override
