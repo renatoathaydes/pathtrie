@@ -51,6 +51,15 @@ public class Examples {
     }
 
     @Test
+    public void multiFunExample() {
+        PathTrie<Object> parameterizedTrie = PathTrie.newBuilder()
+                .putFun("/:a/:b/:c/:d", (a, b, c, d) -> "a=" + a + ",b=" + b + ",c=" + c + ",d=" + d)
+                .build();
+
+        assertEquals("a=A,b=B,c=C,d=D", parameterizedTrie.get("/A/B/C/D").orElse("NOT FOUND"));
+    }
+
+    @Test
     public void parameterizedTrieExample() {
         final Map<String, String> users = new LinkedHashMap<>();
         users.put("123", "Joe");
