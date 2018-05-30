@@ -5,20 +5,16 @@ import java.util.Map;
 import java.util.PrimitiveIterator;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
-import javafx.application.Application;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
 
-public class ResultsLineChart extends Application {
+public class ResultsLineChart extends Chart {
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public Node createChartPane() {
         List<String> args = getParameters().getUnnamed();
         boolean showParameterized = args.contains("p");
         Map<String, long[]> results;
@@ -27,20 +23,16 @@ public class ResultsLineChart extends Application {
         if (showParameterized) {
             results = PerformanceTest.run(PerformanceTest.PARAMETERIZED);
             chartPane = new StackPane(create98PercentChart(
-                    "Parameterized Performance-", results));
+                    "Parameterized Performance", results));
             chartPane.setPrefSize(700, 550);
         } else {
             results = PerformanceTest.run(PerformanceTest.NO_PARAMETERS);
             chartPane = new StackPane(create98PercentChart(
-                    "Non-parameterized Performance-", results));
+                    "Non-parameterized Performance", results));
             chartPane.setPrefSize(700, 550);
         }
 
-        Parent charts = new ScrollPane(chartPane);
-
-        Scene scene = new Scene(charts, 800, 600);
-        stage.setScene(scene);
-        stage.show();
+        return chartPane;
     }
 
     private LineChart<Number, Number> create98PercentChart(String title, Map<String, long[]> results) {
