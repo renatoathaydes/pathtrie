@@ -50,14 +50,9 @@ PathTrie<Object> parameterizedTrie = PathTrie.newBuilder()
         .putFun("/users/:id", id -> users.get(id))
         .build();
 
-assertTrue(parameterizedTrie.get("/users").isPresent());
-assertEquals(users, parameterizedTrie.get("/users").get());
-
-assertTrue(parameterizedTrie.get("/users/123").isPresent());
-assertEquals("Joe", parameterizedTrie.get("/users/123").get());
-
-assertTrue(parameterizedTrie.get("/users/456").isPresent());
-assertEquals("Mary", parameterizedTrie.get("/users/456").get());
+assertEquals(users, parameterizedTrie.get("/users").orElse(emptyMap()));
+assertEquals("Joe", parameterizedTrie.get("/users/123").orElse("NOT FOUND"));
+assertEquals("Mary", parameterizedTrie.get("/users/456").orElse("NOT FOUND"));
 
 assertFalse(parameterizedTrie.get("/others").isPresent());
 assertFalse(parameterizedTrie.get("/users/789").isPresent());
