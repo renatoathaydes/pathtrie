@@ -7,6 +7,7 @@ import java.util.function.Function;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class Examples {
@@ -27,6 +28,30 @@ public class Examples {
 
         assertTrue(helloTrie.isPresent());
         assertEquals(Integer.valueOf(1), helloTrie.get().get("world").get());
+    }
+
+    @Test
+    public void funExample() {
+        final Map<String, String> users = new LinkedHashMap<>();
+        users.put("123", "Joe");
+        users.put("456", "Mary");
+
+        PathTrie<Object> parameterizedTrie = PathTrie.newBuilder()
+                .putFun("/users", () -> users)
+                .putFun("/users/:id", id -> users.get(id))
+                .build();
+
+        assertTrue(parameterizedTrie.get("/users").isPresent());
+        assertEquals(users, parameterizedTrie.get("/users").get());
+
+        assertTrue(parameterizedTrie.get("/users/123").isPresent());
+        assertEquals("Joe", parameterizedTrie.get("/users/123").get());
+
+        assertTrue(parameterizedTrie.get("/users/456").isPresent());
+        assertEquals("Mary", parameterizedTrie.get("/users/456").get());
+
+        assertFalse(parameterizedTrie.get("/others").isPresent());
+        assertFalse(parameterizedTrie.get("/users/789").isPresent());
     }
 
     @Test

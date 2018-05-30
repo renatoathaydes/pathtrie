@@ -45,43 +45,20 @@ final Map<String, String> users = new LinkedHashMap<>();
 users.put("123", "Joe");
 users.put("456", "Mary");
 
-abstract class Controller {
-    abstract String handle(ParameterizedElement<Controller> element);
-}
-
-class AllUsersController extends Controller {
-    @Override
-    String handle(ParameterizedElement<Controller> element) {
-        return "users: " + users.values().toString();
-    }
-}
-
-class UserController extends Controller {
-    @Override
-    String handle(ParameterizedElement<Controller> element) {
-        String id = element.param("id");
-        return users.containsKey(id) ? "name: " + users.get(id) : "found: false";
-    }
-}
-
-PathTrie<Controller> parameterizedTrie = PathTrie.<Controller>newBuilder()
-        .put("/users", new AllUsersController())
-        .put("/users/:id", new UserController())
+PathTrie<Object> parameterizedTrie = PathTrie.newBuilder()
+        .putFun("/users", () -> users)
+        .putFun("/users/:id", id -> users.get(id))
         .build();
 
-Function<String, String> router = (path) -> parameterizedTrie.getParameterized(path)
-        .map(p -> p.getElement().handle(p))
-        .orElse("Path not mapped");
+assertTrue(parameterizedTrie.get("/users").isPresent());
+assertEquals(users, parameterizedTrie.get("/users").get());
 
-String allUsers = router.apply("/users");
-assertEquals("users: [Joe, Mary]", allUsers);
+assertTrue(parameterizedTrie.get("/users/123").isPresent());
+assertEquals("Joe", parameterizedTrie.get("/users/123").get());
 
-String user123 = router.apply("/users/123");
-assertEquals("name: Joe", user123);
+assertTrue(parameterizedTrie.get("/users/456").isPresent());
+assertEquals("Mary", parameterizedTrie.get("/users/456").get());
 
-String user456 = router.apply("/users/456");
-assertEquals("name: Mary", user456);
-
-String user789 = router.apply("/users/789");
-assertEquals("found: false", user789);
+assertFalse(parameterizedTrie.get("/others").isPresent());
+assertFalse(parameterizedTrie.get("/users/789").isPresent());
 ```
