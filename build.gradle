@@ -12,3 +12,11 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
+
+task fatTestJar(type: Jar) {
+    dependsOn 'test'
+    classifier "all"
+    from configurations.testRuntime.collect { it.isDirectory() ? it : zipTree(it) }
+    from sourceSets.test.output
+    with jar
+}
