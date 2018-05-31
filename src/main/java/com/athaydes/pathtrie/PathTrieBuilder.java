@@ -6,7 +6,6 @@ import com.athaydes.pathtrie.functions.Fun2;
 import com.athaydes.pathtrie.functions.Fun3;
 import com.athaydes.pathtrie.functions.Fun4;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -92,14 +91,17 @@ public class PathTrieBuilder<E> {
         } else if (node.element != null) {
             verifyParameterCount(visitedParameters, pathParts, node);
         }
-        Set<String> visitedInBranch = new HashSet<>(visitedParameters);
         node.childrenByPath.forEach((path, mutableTrieNode) -> {
-            pathParts.add(path);
-            verifyParameterNamesAndCount(mutableTrieNode, visitedInBranch, pathParts);
+            Set<String> visitedInBranch = new LinkedHashSet<>(visitedParameters);
+            List<String> pathPartsInBranch = new ArrayList<>(pathParts);
+            pathPartsInBranch.add(path);
+            verifyParameterNamesAndCount(mutableTrieNode, visitedInBranch, pathPartsInBranch);
         });
         if (node.parameterizedChild != null) {
-            pathParts.add(":" + node.parameterizedChild.parameterName);
-            verifyParameterNamesAndCount(node.parameterizedChild, visitedInBranch, pathParts);
+            Set<String> visitedInBranch = new LinkedHashSet<>(visitedParameters);
+            List<String> pathPartsInBranch = new ArrayList<>(pathParts);
+            pathPartsInBranch.add(":" + node.parameterizedChild.parameterName);
+            verifyParameterNamesAndCount(node.parameterizedChild, visitedInBranch, pathPartsInBranch);
         }
     }
 

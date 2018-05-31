@@ -24,7 +24,13 @@ class MutableTrieNode<E> {
         MutableTrieNode<E> child = childrenByPath.get(pathPart);
         if (child == null) {
             if (pathPart.startsWith(parameterPrefix)) {
-                parameterizedChild = new ParameterizedTrieNode<>(pathPart.substring(parameterPrefix.length()));
+                String parameterName = pathPart.substring(parameterPrefix.length());
+                if (parameterizedChild == null) {
+                    parameterizedChild = new ParameterizedTrieNode<>(parameterName);
+                } else if (!parameterizedChild.parameterName.equals(parameterName)) {
+                    throw new IllegalArgumentException("Parameters with different names clash at the same level: '" +
+                            parameterName + "' " + "and '" + parameterizedChild.parameterName + "'");
+                }
                 child = parameterizedChild;
             } else {
                 MutableTrieNode<E> newChild = new MutableTrieNode<>();

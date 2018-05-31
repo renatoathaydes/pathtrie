@@ -226,14 +226,16 @@ public class PathTrieTest {
 
     @Test
     public void cannotPutMoreThanOneParameterOnSameLevel() {
-        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
+        Throwable error = shouldThrow(() -> PathTrie.<Integer>newBuilder()
                 .put("hello/:person", 10)
                 .put("hello/:animal", 11)
                 .put("hello/:thing", 12)
                 .put("hello/:name", 20)
-                .build();
+                .build());
 
-        assertParameterHasValue(trie, "hello/bob", "name", "bob", 20);
+        assertTrue("Error is of expected type :" + error, error instanceof IllegalArgumentException);
+        assertEquals("Parameters with different names clash at the same level: 'animal' and 'person'",
+                error.getMessage());
     }
 
     @Test
@@ -246,12 +248,20 @@ public class PathTrieTest {
 
     @Test
     public void canHaveMoreThanOneParameterWithSameNameOnDifferentHierarchy() {
-        PathTrie.<Integer>newBuilder()
+        PathTrie<Integer> trie = PathTrie.<Integer>newBuilder()
                 .put("hello/one/:name/:something", 10)
                 .put("hello/other/:name/:something", 20)
                 .put("hello/:name", 30)
-                .put("hello/:something/:name", 40)
+                .put(":something/:name", 40)
                 .build();
+
+        assertParameterHasValue(trie, "hello/one/bob/a", "name", "bob", 10);
+        assertParameterHasValue(trie, "hello/one/bob/a", "something", "a", 10);
+        assertParameterHasValue(trie, "hello/other/bob/a", "name", "bob", 20);
+        assertParameterHasValue(trie, "hello/other/bob/a", "something", "a", 20);
+        assertParameterHasValue(trie, "hello/bob", "name", "bob", 30);
+        assertParameterHasValue(trie, "a/bob", "something", "a", 40);
+        assertParameterHasValue(trie, "a/bob", "name", "bob", 40);
     }
 
     @Test
@@ -301,6 +311,7 @@ public class PathTrieTest {
     public void canPutFunInTrie() {
         PathTrie<String> trie = PathTrie.<String>newBuilder()
                 .putFun("hello/:person", person -> "Person is " + person)
+                .putFun("ola/:name", (name) -> "Ola " + name)
                 .putFun("ola/:name/:age", (name, age) -> "" + name + " is " + age + " years old")
                 .build();
 
@@ -308,8 +319,11 @@ public class PathTrieTest {
         assertParameterHasValue(trie, "hello/mary", "person", "mary", "Person is mary");
         assertParameterHasValue(trie, "hello/mary", "person", "mary", "Person is mary");
         assertElementHasValue(trie, "hello/mary", "Person is mary");
+        assertElementHasValue(trie, "ola/mary", "Ola mary");
         assertElementHasValue(trie, "ola/mary/29", "mary is 29 years old");
+        assertElementHasValue(trie, "ola/bob", "Ola bob");
         assertElementHasValue(trie, "ola/bob/57", "bob is 57 years old");
+        assertParameterHasValue(trie, "ola/mary", "name", "mary", "Ola mary");
         assertParameterHasValue(trie, "ola/mary/29", "name", "mary", "mary is 29 years old");
         assertParameterHasValue(trie, "ola/mary/29", "age", "29", "mary is 29 years old");
         assertElementHasValue(trie, "hello/bob", "Person is bob");
