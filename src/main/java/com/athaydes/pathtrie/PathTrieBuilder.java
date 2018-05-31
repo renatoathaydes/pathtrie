@@ -5,9 +5,12 @@ import com.athaydes.pathtrie.functions.Fun1;
 import com.athaydes.pathtrie.functions.Fun2;
 import com.athaydes.pathtrie.functions.Fun3;
 import com.athaydes.pathtrie.functions.Fun4;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -71,24 +74,53 @@ public class PathTrieBuilder<E> {
      * @return an instance of {@link PathTrie} containing the elements added to this builder.
      */
     public PathTrie<E> build() {
-        verifyNoRepeatedParameterNames(root, new HashSet<>());
+        verifyParameterNamesAndCount(root, new LinkedHashSet<>(4), new ArrayList<>(6));
         return new ImmutablePathTrie<>(pathSplitter, asImmutable(root));
     }
 
-    private static void verifyNoRepeatedParameterNames(MutableTrieNode<?> node, Set<String> visitedParameters) {
+    private static void verifyParameterNamesAndCount(MutableTrieNode<?> node,
+                                                     Set<String> visitedParameters,
+                                                     List<String> pathParts) {
         if (node instanceof ParameterizedTrieNode) {
-            String name = ((ParameterizedTrieNode<?>) node).parameterName;
+            ParameterizedTrieNode<?> parameterizedTrieNode = (ParameterizedTrieNode<?>) node;
+            String name = parameterizedTrieNode.parameterName;
             boolean seenBefore = !visitedParameters.add(name);
             if (seenBefore) {
                 throw new IllegalArgumentException("Parameter name appears more than once on same hierarchy: " + name);
             }
+            verifyParameterCount(visitedParameters, pathParts, parameterizedTrieNode);
+        } else if (node.element != null) {
+            verifyParameterCount(visitedParameters, pathParts, node);
         }
         Set<String> visitedInBranch = new HashSet<>(visitedParameters);
-        for (MutableTrieNode<?> mutableTrieNode : node.childrenByPath.values()) {
-            verifyNoRepeatedParameterNames(mutableTrieNode, visitedInBranch);
-        }
+        node.childrenByPath.forEach((path, mutableTrieNode) -> {
+            pathParts.add(path);
+            verifyParameterNamesAndCount(mutableTrieNode, visitedInBranch, pathParts);
+        });
         if (node.parameterizedChild != null) {
-            verifyNoRepeatedParameterNames(node.parameterizedChild, visitedInBranch);
+            pathParts.add(":" + node.parameterizedChild.parameterName);
+            verifyParameterNamesAndCount(node.parameterizedChild, visitedInBranch, pathParts);
+        }
+    }
+
+    private static void verifyParameterCount(Set<String> visitedParameters,
+                                             List<String> pathParts,
+                                             MutableTrieNode<?> node) {
+        int pathParameterCount = visitedParameters.size();
+        int nodeParameterCount = node.element == null
+                ? pathParameterCount
+                : node.element.use(
+                b -> pathParameterCount, f -> f.fun.parameterCount());
+        if (nodeParameterCount != pathParameterCount) {
+            String path = String.join("/", pathParts);
+            StringBuilder builder = new StringBuilder();
+            builder.append("Path '").append(path).append("' contains ")
+                    .append(pathParameterCount).append(" parameter");
+            if (pathParameterCount != 1) {
+                builder.append('s');
+            }
+            builder.append(" but Fun").append(nodeParameterCount).append(" expects ").append(nodeParameterCount);
+            throw new IllegalArgumentException(builder.toString());
         }
     }
 

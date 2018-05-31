@@ -317,6 +317,46 @@ public class PathTrieTest {
         assertFalse("Does not contain element not added", trie.get("other/path").isPresent());
     }
 
+    @Test
+    public void validatesFunParametersCount() {
+        Throwable error = shouldThrow(() -> PathTrie.<String>newBuilder()
+                .putFun("hello/:person", (a, b) -> "")
+                .build());
+
+        assertTrue("Error is of expected type :" + error, error instanceof IllegalArgumentException);
+        assertEquals("Path 'hello/:person' contains 1 parameter but Fun2 expects 2", error.getMessage());
+    }
+
+    @Test
+    public void validatesFunParametersCount2() {
+        Throwable error = shouldThrow(() -> PathTrie.<String>newBuilder()
+                .putFun(":a/:b/:c/:d", (a) -> "")
+                .build());
+
+        assertTrue("Error is of expected type :" + error, error instanceof IllegalArgumentException);
+        assertEquals("Path ':a/:b/:c/:d' contains 4 parameters but Fun1 expects 1", error.getMessage());
+    }
+
+    @Test
+    public void validatesFunParametersCount3() {
+        Throwable error = shouldThrow(() -> PathTrie.<String>newBuilder()
+                .putFun("hello", (a) -> "")
+                .build());
+
+        assertTrue("Error is of expected type :" + error, error instanceof IllegalArgumentException);
+        assertEquals("Path 'hello' contains 0 parameters but Fun1 expects 1", error.getMessage());
+    }
+
+    @Test
+    public void validatesFunParametersCount4() {
+        Throwable error = shouldThrow(() -> PathTrie.<String>newBuilder()
+                .putFun("hello/:name", () -> "")
+                .build());
+
+        assertTrue("Error is of expected type :" + error, error instanceof IllegalArgumentException);
+        assertEquals("Path 'hello/:name' contains 1 parameter but Fun0 expects 0", error.getMessage());
+    }
+
     private <V> void assertParameterHasValue(PathTrie<V> trie, String key, String parameterName,
                                              String parameterValue, V value) {
         Optional<ParameterizedElement<V>> element = trie.getParameterized(key);
