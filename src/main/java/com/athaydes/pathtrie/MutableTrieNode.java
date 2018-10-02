@@ -43,7 +43,7 @@ class MutableTrieNode<E> {
 
 }
 
-class ParameterizedTrieNode<E> extends MutableTrieNode<E> {
+final class ParameterizedTrieNode<E> extends MutableTrieNode<E> {
     final String parameterName;
 
     ParameterizedTrieNode(String parameterName) {
